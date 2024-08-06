@@ -18,7 +18,7 @@ const options = [
 
 const registrys = {
     "npm官方": "npm config set registry https://registry.npmjs.org/",
-    "淘宝源": "npm config set registry https://registry.npmmirror.org/"
+    "淘宝源": "npm config set registry https://registry.npmmirror.com/"
 }
 
 const setRegistry = () => {

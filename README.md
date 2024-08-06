@@ -1,12 +1,12 @@
 # 一个模拟 `vite` 的脚手架
 
-全局安装
+## 全局安装
 
 ``` bash
 pnpm add raopancli -g
 ```
 
-使用
+## 帮助
 
 ``` bash
 raopancli -h
@@ -21,14 +21,18 @@ raopancli -h
 #   -r --run      本地启动项目或打包项目
 #   -d --delete   删除当前目录的 node_modules
 #   -c --create   生成 vite 项目
+#   -s --setRegistry  切换npm源
 #   -h, --help    display help for command
 ```
 
+## 使用
+
 ``` bash
 raopancli -v
-raopancli -c
 raopancli -r
 raopancli -d
+raopancli -c
+raopancli -s
 ```
 
 ## 如何实现一个脚手架？
