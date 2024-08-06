@@ -10,20 +10,18 @@ pnpm add raopancli -g
 
 ``` bash
 raopancli -h
-```
 
-``` bash
-PS D:\Code\RAOPANCLI> raopancli -h
-Usage: raopancli 脚手架 [options]
+# PS D:\Code\RAOPANCLI> raopancli -h
+# Usage: raopancli 脚手架 [options]
 
-raopan 的 JavaScript 脚手架工具
+# raopan 的 JavaScript 脚手架工具
 
-Options:
-  -v --version  查看脚手架版本号
-  -r --run      本地启动项目或打包项目
-  -d --delete   删除当前目录的 node_modules
-  -c --create   生成 vite 项目
-  -h, --help    display help for command
+# Options:
+#   -v --version  查看脚手架版本号
+#   -r --run      本地启动项目或打包项目
+#   -d --delete   删除当前目录的 node_modules
+#   -c --create   生成 vite 项目
+#   -h, --help    display help for command
 ```
 
 ``` bash
