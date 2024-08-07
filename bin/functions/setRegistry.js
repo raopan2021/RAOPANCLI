@@ -10,7 +10,11 @@ const options = [
         message: '请选择npm源',
         choices: [
             'npm官方',
-            '淘宝源'
+            '淘宝源',
+            '阿里源',
+            '腾讯源',
+            '华为源',
+            '清华源',
         ],
         default: '淘宝源'
     },
@@ -18,7 +22,11 @@ const options = [
 
 const registrys = {
     "npm官方": "npm config set registry https://registry.npmjs.org/",
-    "淘宝源": "npm config set registry https://registry.npmmirror.com/"
+    "淘宝源": "npm config set registry https://registry.npmmirror.com/",
+    "阿里源": "npm config set registry https://npm.aliyun.com/",
+    "腾讯源": "npm config set registry https://mirrors.cloud.tencent.com/npm/",
+    "华为源": "npm config set registry https://mirrors.huaweicloud.com/repository/npm/",
+    "清华源": "npm config set registry https://mirrors.tuna.tsinghua.edu.cn/",
 }
 
 const setRegistry = () => {
@@ -36,7 +44,7 @@ const setRegistry = () => {
                         console.log(chalk.redBright('切换失败'));
                     }
                 })
-        },0);
+        }, 0);
 
         setTimeout(() => {
             shell.exec(
@@ -48,7 +56,7 @@ const setRegistry = () => {
                         console.log(chalk.redBright('查询npm源失败'));
                     }
                 })
-        },1500);
+        }, 1500);
     })
 }
 

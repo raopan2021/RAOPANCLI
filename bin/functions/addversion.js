@@ -2,15 +2,15 @@
 import fs from 'fs-extra'
 import chalk from 'chalk';
 
-const addVersion = () => {
+const addVersion = (num) => {
     const packageJsonPath = process.cwd() + '/package.json';
-    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath,'utf-8'));
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
 
     const version = packageJson.version.split('.');
-    version[version.length - 1] = parseInt(version[version.length - 1]) + 1;
+    version[version.length - 1] = parseInt(version[version.length - 1]) + num;
     packageJson.version = version.join('.');
 
-    fs.writeFileSync(packageJsonPath,JSON.stringify(packageJson,null,2));
+    fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
     console.log(chalk.cyan(`\n版本更新到 ${packageJson.version}\n`))
 }
 
