@@ -1,13 +1,13 @@
 #! /usr/bin/env node
 
 import {Command} from 'commander';
-import fs from 'fs-extra'
+import fs from 'fs-extra';
 import print from './utils/print.js';
 import printLogo from './utils/printLogo.js';
 import deleteNodeModules from './functions/delete_node_modules.js';
 import create from './functions/create.js';
 import run from './functions/run.js';
-import setRegistry from './functions/setRegistry.js';
+import setMirror from './functions/setMirror.js';
 import printHelp from './functions/printHelp.js';
 
 const program = new Command();
@@ -22,26 +22,26 @@ program
     .option('-r --run', '本地启动项目或打包项目')
     .option('-d --delete', '删除当前目录的 node_modules')
     .option('-c --create', '生成 vite 项目')
-    .option('-s --setRegistry', '切换 npm 源')
+    .option('-s --setMirror', '切换 npm 源')
     .action(async (options) => {
         if (options.version) {
-            print(JSON.parse(fs.readFileSync(fileDirTemp + 'package.json', 'utf-8')).version)
+            print(JSON.parse(fs.readFileSync(fileDirTemp + 'package.json', 'utf-8')).version);
         } else if (options.run) {
-            printLogo()
-            run()
+            printLogo();
+            run();
         } else if (options.delete) {
-            deleteNodeModules()
+            deleteNodeModules();
         } else if (options.create) {
-            printLogo()
-            create()
-        } else if (options.setRegistry) {
-            setRegistry()
+            printLogo();
+            create();
+        } else if (options.setMirror) {
+            setMirror();
         } else if (options.help) {
-            printHelp(program.name(), program.description(), program.helpCommand().options)
+            printHelp(program.name(), program.description(), program.helpCommand().options);
         }
         if (JSON.stringify(options) == '{}') {
-            printLogo()
+            printLogo();
         }
-    })
+    });
 
-program.parse()
+program.parse();
