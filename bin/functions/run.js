@@ -1,25 +1,18 @@
 import fs from 'fs-extra';
 import inquirer from 'inquirer';
-import {execSync} from 'child_process';
+import shell from "shelljs";
 import addVersion from './addversion.js';
 import printError from '../utils/printError.js';
 import stringOptimization from '../utils/stringOptimization.js';
 
 const run = () => {
-    if (
-        !(
-            fs.pathExistsSync(process.cwd() + '/pnpm-lock.yaml') &&
-            fs.pathExistsSync(process.cwd() + '/package.json')
-        )
-    ) {
+    if (!(fs.pathExistsSync(process.cwd() + '/pnpm-lock.yaml') && fs.pathExistsSync(process.cwd() + '/package.json'))) {
         printError('未找到可执行脚本');
         return;
     }
 
     const action = [];
-    let npmWay = fs.pathExistsSync(process.cwd() + '/pnpm-lock.yaml')
-        ? 'pnpm'
-        : 'npm';
+    let npmWay = fs.pathExistsSync(process.cwd() + '/pnpm-lock.yaml') ? 'pnpm' : 'npm';
     action.push(npmWay === 'npm' ? 'npm run' : 'pnpm');
 
     const packageJson = fs.readJsonSync(process.cwd() + '/package.json');
@@ -48,12 +41,16 @@ const run = () => {
         if (res.addVersion) addVersion(1);
 
         action.push(res.script.split(':')[0]);
-        try {
-            execSync(action.join(' '), {encoding: 'utf-8'}).trim();
-        } catch (error) {
-            printError('脚本执行失败');
-            if (res.addVersion) addVersion(-1);
-        }
+
+        shell.exec(
+            action.join(' '),
+            code => {
+                if (code !== 0) {
+                    printError('脚本执行失败')
+                    if (res.addVersion) addVersion(-1)
+                }
+            }
+        )
     });
 };
 

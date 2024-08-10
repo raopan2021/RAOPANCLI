@@ -1,7 +1,6 @@
 // 切换npm源
-import {execSync} from 'child_process';
+import { execSync } from 'child_process';
 import inquirer from 'inquirer';
-import findObj from "../utils/findObj.js";
 import print from '../utils/print.js';
 import printError from '../utils/printError.js';
 
@@ -14,22 +13,31 @@ const mirrors = {
     '清华源': 'https://mirrors.tuna.tsinghua.edu.cn/',
 }
 
+const findObj = (obj, str) => {
+    for (const [key, value] of Object.entries(obj)) {
+        if (key.includes(str) || String(value.split('//')[1]).includes(str.split('//')[1])) {
+            return [key, value];
+        }
+    }
+    return ['', ''];
+};
+
 // 查询当前源
 const getNowMirror = () => {
-    const npmNow = execSync('npm config get registry', {encoding: 'utf-8'}).trim();
+    const npmNow = execSync('npm config get registry', { encoding: 'utf-8' }).trim();
     const [key, value] = findObj(mirrors, npmNow);
     if (key && value === npmNow) {
         print('\n' + '当前 npm 源为 - ' + key + ': ' + value + '\n');
-        return [key, value];
+        return key;
     } else {
         printError('您当前使用的npm源不在列表中');
-        return;
+        return '';
     }
 };
 
 const setMirror = async () => {
     // 查询当前源
-    const [npmKey, npmValue] = await getNowMirror();
+    const npmKey = await getNowMirror();
 
     try {
         const res = await inquirer.prompt([{
@@ -41,7 +49,7 @@ const setMirror = async () => {
         }]);
         // 修改源
         try {
-            execSync('npm config set registry ' + findObj(mirrors, res.npm)[1], {encoding: 'utf-8',}).trim();
+            execSync('npm config set registry ' + findObj(mirrors, res.npm)[1], { encoding: 'utf-8', }).trim();
             print('切换成功');
         } catch (error) {
             print('切换失败');
