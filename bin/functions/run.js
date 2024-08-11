@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import inquirer from 'inquirer';
 import shell from "shelljs";
 import addVersion from './addversion.js';
-import printError from '../utils/printError.js';
+import { printError } from '../utils/print.js';
 import stringOptimization from '../utils/stringOptimization.js';
 
 const run = () => {

@@ -1,5 +1,5 @@
 // .option('-h --help','查看帮助信息')
-import print from '../utils/print.js';
+import { print } from '../utils/print.js';
 import stringOptimization from '../utils/stringOptimization.js';
 
 const printHelp = (name, description, options) => {

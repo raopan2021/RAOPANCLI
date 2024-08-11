@@ -14,4 +14,12 @@ const print = (text) => {
     console.log(res)
 };
 
-export default print;
+const printSuccess = (text) => {
+    console.log(chalk.green(text))
+};
+
+const printError = (text) => {
+    console.log(chalk.red.bold(text));
+}
+
+export { print, printSuccess, printError };

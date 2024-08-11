@@ -1,6 +1,6 @@
 // 从package.json中获取版本号，给最后一位加1
 import fs from 'fs-extra';
-import print from '../utils/print.js';
+import { print } from '../utils/print.js';
 
 const addVersion = (num) => {
     print('package.json版本号加' + num);

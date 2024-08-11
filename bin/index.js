@@ -1,8 +1,8 @@
 #! /usr/bin/env node
 
-import {Command} from 'commander';
+import { Command } from 'commander';
 import fs from 'fs-extra';
-import print from './utils/print.js';
+import { print } from './utils/print.js';
 import printLogo from './utils/printLogo.js';
 import deleteNodeModules from './functions/delete_node_modules.js';
 import deploy from './functions/deploy.js';

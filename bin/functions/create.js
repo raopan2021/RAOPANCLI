@@ -1,7 +1,7 @@
 import inquirer from 'inquirer';
 import fs from 'fs-extra'
 import ora from 'ora';
-import print from '../utils/print.js';
+import { print } from '../utils/print.js';
 
 const options = [
     {

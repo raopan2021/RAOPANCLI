@@ -1,8 +1,7 @@
 // 切换npm源
 import { execSync } from 'child_process';
 import inquirer from 'inquirer';
-import print from '../utils/print.js';
-import printError from '../utils/printError.js';
+import { print,printError } from '../utils/print.js';
 
 const mirrors = {
     'npm官方': 'https://registry.npmjs.org/',
