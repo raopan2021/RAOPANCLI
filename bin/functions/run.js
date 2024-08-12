@@ -22,21 +22,18 @@ const run = () => {
         scriptArr.push(`${key} :  ${value}`);
     });
 
-    const options = [
-        {
-            name: 'script',
-            type: 'list',
-            message: '请选择执行脚本',
-            choices: stringOptimization(scriptArr),
-        },
-        {
-            name: 'addVersion',
-            type: 'confirm',
-            message: 'package.json 的 version 是否加 1',
-            default: true,
-            when: (answers) => answers.script.includes('build'),
-        },
-    ];
+    const options = [{
+        name: 'script',
+        type: 'list',
+        message: '请选择执行脚本',
+        choices: stringOptimization(scriptArr),
+    }, {
+        name: 'addVersion',
+        type: 'confirm',
+        message: 'package.json 的 version 是否加 1',
+        default: true,
+        when: (answers) => answers.script.includes('build'),
+    }];
     inquirer.prompt(options).then((res) => {
         if (res.addVersion) addVersion(1);
 

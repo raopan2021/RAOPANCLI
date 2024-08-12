@@ -3,16 +3,16 @@ import { print } from '../utils/print.js';
 import stringOptimization from '../utils/stringOptimization.js';
 
 const printHelp = (name, description, options) => {
-    print(name, 'rgb(120, 100, 200');
-    print(description + '\n');
+	print(name, 'rgb(120, 100, 200');
+	print(description);
 
-    const opts = [];
-    options.forEach((item) => {
-        opts.push(item.flags + ':' + item.description);
-    });
-    stringOptimization(opts).forEach((item) => {
-        print(item);
-    });
+	const opts = [];
+	options.forEach((item) => {
+		opts.push(item.flags + ':' + item.description);
+	});
+	stringOptimization(opts).forEach((item) => {
+		print(item);
+	});
 };
 
 export default printHelp;
