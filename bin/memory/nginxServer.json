@@ -1,7 +1,4 @@
 {
-    "nginxPath": "D://APP/nginx-1.22.0",
-    "nginxList": [
-        "D://APP/nginx-1.22.0"
-    ],
-    "vue": "D://APP/nginx-1.22.0/html/vite"
+	"nginxPath": "",
+	"nginxList": []
 }
