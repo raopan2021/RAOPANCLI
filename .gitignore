@@ -3,3 +3,5 @@ node_modules
 pnpm-lock*
 
 bin/memory/serverUrl.json
+
+dist/
