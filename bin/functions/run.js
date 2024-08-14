@@ -3,10 +3,36 @@ import inquirer from 'inquirer';
 import shell from "shelljs";
 import addVersion from './addversion.js';
 import { printError } from '../utils/print.js';
-import stringOptimization from '../utils/stringOptimization.js';
+
+// 添加空格
+const addSpaces = (str, start, max) => {
+    let spaces = '   ';
+    let num = max - start;
+    while (num) {
+        spaces += ' ';
+        num--;
+    }
+    return str.slice(0, start) + spaces + str.slice(start);
+};
+
+// 处理字符串
+const stringOptimization = (arr) => {
+    let maxLength = 0;
+    const res = [];
+    arr.forEach((item) => {
+        if (item.indexOf('_') > maxLength) {
+            maxLength = item.indexOf('_');
+        }
+    });
+    arr.forEach((item) => {
+        res.push(addSpaces(item, item.indexOf('_'), maxLength));
+    });
+    return res;
+};
+
 
 const run = () => {
-    if (!(fs.pathExistsSync(process.cwd() + '/pnpm-lock.yaml') && fs.pathExistsSync(process.cwd() + '/package.json'))) {
+    if (!(fs.pathExistsSync(process.cwd() + '/pnpm-lock.yaml') || fs.pathExistsSync(process.cwd() + '/package.json'))) {
         printError('未找到可执行脚本');
         return;
     }
@@ -19,7 +45,7 @@ const run = () => {
     const scriptArr = [];
 
     Object.entries(packageJson.scripts).forEach(([key, value]) => {
-        scriptArr.push(`${key} :  ${value}`);
+        scriptArr.push(`${key} _  ${value}`);
     });
 
     const options = [{
@@ -37,10 +63,10 @@ const run = () => {
     inquirer.prompt(options).then((res) => {
         if (res.addVersion) addVersion(1);
 
-        action.push(res.script.split(':')[0]);
+        action.push(res.script.split('_')[0]);
 
         shell.exec(
-            action.join(' '),
+            action.join(' ').trim(),
             code => {
                 if (code !== 0) {
                     printError('脚本执行失败')
