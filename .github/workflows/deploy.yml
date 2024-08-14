@@ -38,9 +38,10 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 20
-                  cache: pnpm # or pnpm / yarn
             - name: Setup Pages
               uses: actions/configure-pages@v4
+            - name: Install pnpm
+              run: npm install pnpm -g # or pnpm install / yarn install / bun install
             - name: Install dependencies
               run: pnpm install # or pnpm install / yarn install / bun install
             - name: Build with VitePress
