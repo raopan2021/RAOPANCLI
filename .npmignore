@@ -2,10 +2,8 @@
 *.iml
 coverage/
 examples/
-node_modules/
 typings/
 sandbox/
-test/
 bower.json
 CODE_OF_CONDUCT.md
 COLLABORATOR_GUIDE.md
@@ -17,4 +15,7 @@ karma.conf.js
 webpack.*.js
 sauce_connect.log
 
+.github
 docs/
+node_modules/
+test/

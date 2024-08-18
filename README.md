@@ -12,27 +12,27 @@ pnpm add raopancli -g
 raopancli -h
 
 # PS D:\Code\RAOPANCLI> raopancli -h
-# Usage: raopancli 脚手架 [options]
-
+# raopancli 脚手架
 # raopan 的 JavaScript 脚手架工具
-
-# Options:
-#   -v --version  查看脚手架版本号
-#   -r --run      本地启动项目或打包项目
-#   -d --delete   删除当前目录的 node_modules
-#   -c --create   生成 vite 项目
-#   -s --setRegistry  切换npm源
-#   -h, --help    display help for command
+# -h --help        查看帮助信息
+# -v --version     查看脚手架版本号
+# -r --run         本地启动项目或打包项目
+# -dn --delete     删除当前目录的 node_modules
+# -d --deploy      部署当前项目到本机 nginx
+# -c --create      生成 vite 项目
+# -s --setMirror   切换 npm 源
 ```
 
 ## 使用
 
 ``` bash
-raopancli -v
-raopancli -r
-raopancli -d
-raopancli -c
-raopancli -s
+raopancli -h 
+raopancli -v 
+raopancli -r 
+raopancli -dn
+raopancli -d 
+raopancli -c 
+raopancli -s 
 ```
 
 ## 如何实现一个脚手架？
