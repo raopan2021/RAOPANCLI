@@ -3,3 +3,4 @@ node_modules
 bin/memory/serverUrl.json
 
 dist/
+docs/.vitepress/cache/*

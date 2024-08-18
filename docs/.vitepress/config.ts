@@ -4,7 +4,7 @@ import { defineConfig } from 'vitepress';
 export default defineConfig({
 	title: 'raopan 的前端脚手架',
 	description: '实现自己的脚手架',
-	base: 'RAOPANCLI',
+	base: '/RAOPANCLI',
 	// 是否忽略死链
 	ignoreDeadLinks: false,
 	// 最后更新于 开关
