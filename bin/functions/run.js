@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import inquirer from "inquirer";
 import shell from "shelljs";
+import { spawn } from "child_process";
 import { print, printError } from "../utils/print.js";
 import addVersion from "./addversion.js";
 
@@ -30,7 +31,30 @@ const stringOptimization = (arr) => {
     return res;
 };
 
-const run = (skipConfirm = false) => {
+// 打开浏览器
+const openBrowser = (url) => {
+    const browserCmd = process.platform === 'win32' ? 'start' : 
+                       process.platform === 'darwin' ? 'open' : 'xdg-open';
+    spawn(browserCmd, [url], { detached: true, stdio: 'ignore' });
+};
+
+// 检测 dev 服务器并打开浏览器
+const waitForServer = (url, timeout = 30000) => {
+    return new Promise((resolve) => {
+        const startTime = Date.now();
+        const check = () => {
+            // 简单延迟后打开浏览器
+            setTimeout(() => {
+                print(`正在打开浏览器: ${url}`);
+                openBrowser(url);
+                resolve();
+            }, 2000);
+        };
+        check();
+    });
+};
+
+const run = (skipConfirm = false, autoOpen = false) => {
     try {
         if (
             !(
@@ -98,16 +122,51 @@ const run = (skipConfirm = false) => {
         // 如果 skipConfirm 为 true，自动选择第一个脚本
         if (skipConfirm) {
             const defaultScript = scriptArr[0];
+            const isDev = defaultScript.includes("dev") || defaultScript.includes("serve");
             const isBuild = defaultScript.includes("build");
             
             if (isBuild) {
                 addVersion(1);
             }
             
-            action.push(defaultScript.split("_")[0]);
+            const scriptName = defaultScript.split("_")[0];
+            action.push(scriptName);
             
-            print('执行脚本: ' + defaultScript.split("_")[0]);
+            print('执行脚本: ' + scriptName);
             
+            // 如果是 dev 命令且 autoOpen 为 true，使用 spawn 以保持进程
+            if (isDev && autoOpen) {
+                const devCmd = npmWay === 'yarn' ? 'yarn' : 
+                               npmWay === 'bun' ? 'bun' : 
+                               (npmWay === "npm" ? 'npm' : 'pnpm');
+                const args = npmWay === 'yarn' ? [scriptName] : 
+                             npmWay === 'bun' ? ['run', scriptName] : 
+                             ['run', scriptName];
+                
+                const child = spawn(devCmd, args, {
+                    cwd: process.cwd(),
+                    stdio: 'inherit',
+                    shell: true
+                });
+                
+                child.on('close', (code) => {
+                    if (code !== 0) {
+                        printError(`脚本执行失败，退出码: ${code}`);
+                    }
+                });
+                
+                // 等待服务启动后打开浏览器
+                setTimeout(() => {
+                    const url = packageJson.devServer?.host ? 
+                        `http://${packageJson.devServer.host}:${packageJson.devServer.port || 5173}` :
+                        'http://localhost:5173';
+                    waitForServer(url);
+                }, 3000);
+                
+                return;
+            }
+            
+            // 否则使用 shell.exec（原有逻辑）
             shell.exec(action.join(" ").trim(), (code) => {
                 if (code !== 0) {
                     printError("脚本执行失败");
@@ -137,7 +196,43 @@ const run = (skipConfirm = false) => {
         inquirer.prompt(options).then((res) => {
             if (res.addVersion) addVersion(1);
 
-            action.push(res.script.split("_")[0]);
+            const scriptName = res.script.split("_")[0];
+            const isDev = res.script.includes("dev") || res.script.includes("serve");
+            const isBuild = res.script.includes("build");
+            
+            action.push(scriptName);
+            
+            print('执行脚本: ' + scriptName);
+
+            // 如果是 dev 命令且 autoOpen 为 true
+            if (isDev && autoOpen) {
+                const devCmd = npmWay === 'yarn' ? 'yarn' : 
+                               npmWay === 'bun' ? 'bun' : 
+                               (npmWay === "npm" ? 'npm' : 'pnpm');
+                const args = npmWay === 'yarn' ? [scriptName] : 
+                             npmWay === 'bun' ? ['run', scriptName] : 
+                             ['run', scriptName];
+                
+                const child = spawn(devCmd, args, {
+                    cwd: process.cwd(),
+                    stdio: 'inherit',
+                    shell: true
+                });
+                
+                child.on('close', (code) => {
+                    if (code !== 0) {
+                        printError(`脚本执行失败，退出码: ${code}`);
+                    }
+                });
+                
+                setTimeout(() => {
+                    const url = packageJson.devServer?.host ? 
+                        `http://${packageJson.devServer.host}:${packageJson.devServer.port || 5173}` :
+                        'http://localhost:5173';
+                    waitForServer(url);
+                }, 3000);
+                return;
+            }
 
             shell.exec(action.join(" ").trim(), (code) => {
                 if (code !== 0) {
@@ -146,7 +241,7 @@ const run = (skipConfirm = false) => {
                 }
 
                 // 跨平台压缩 dist 文件夹
-                if (res.script.includes("build")) {
+                if (isBuild) {
                     // 看目录是否有dist.zip文件，有则删除
                     if (fs.pathExistsSync(process.cwd() + "/dist.zip")) {
                         print("删除dist.zip文件成功");

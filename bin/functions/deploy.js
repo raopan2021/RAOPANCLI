@@ -313,6 +313,34 @@ const deploy = async (skipConfirm = false) => {
     // 遍历 nginx/html 目录，获取所有项目文件夹
     await getNginxHtml(nginxServerMemory.nginxList);
 
+    // 如果 skipConfirm，使用默认配置直接部署
+    if (skipConfirm) {
+        const defaultNginx = nginxServerMemory.nginxPath || nginxServerMemory.nginxList[0];
+        const defaultHtml = projectPath || (nginxDirectories[defaultNginx] ? nginxDirectories[defaultNginx][0] : '');
+        
+        if (!defaultNginx) {
+            printError('没有可用的 nginx 服务器');
+            process.exit(1);
+        }
+        
+        if (!defaultHtml) {
+            printError('没有可用的部署目录');
+            process.exit(1);
+        }
+        
+        nginxServerPath = defaultNginx;
+        projectPath = defaultHtml;
+        
+        print(`使用默认配置: ${defaultNginx} -> ${defaultHtml}`);
+        
+        // 保存项目默认部署目录
+        await setNginxHtmlDefault();
+        await setNginxServerMemory({ path: nginxServerPath });
+        await copyDist();
+        restartNginx();
+        return;
+    }
+
     await inquirer.prompt([{
         name: 'nginxServer',
         type: 'list',
