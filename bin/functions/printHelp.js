@@ -1,5 +1,5 @@
 // .option('-h --help','查看帮助信息')
-import { print } from '../utils/print.js';
+import chalk from 'chalk';
 
 const addSpaces = (str, start, max) => {
     let spaces = '   ';
@@ -27,15 +27,17 @@ const stringOptimization = (arr) => {
 };
 
 const printHelp = (name, description, options) => {
-    print(name, 'rgb(120, 100, 200');
-    print(description);
+    console.log(chalk.cyan.bold(name));
+    console.log(chalk.gray(description));
+    console.log('');
 
     const opts = [];
     options.forEach((item) => {
-        opts.push(item.flags + ':' + item.description);
+        opts.push(item.flags + ': ' + item.description);
     });
-    stringOptimization(opts).forEach((item) => {
-        print(item);
+    
+    opts.forEach((item) => {
+        console.log(chalk.green(item));
     });
 };
 
