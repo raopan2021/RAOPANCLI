@@ -80,7 +80,7 @@ const run = () => {
                 if (res.addVersion) addVersion(-1);
             }
 
-            // windoows系统将dist文件夹里面的内容压缩为dist.zip
+            // 跨平台压缩 dist 文件夹
             if (res.script.includes("build")) {
                 // 看目录是否有dist.zip文件，有则删除
                 if (fs.pathExistsSync(process.cwd() + "/dist.zip")) {
@@ -88,9 +88,16 @@ const run = () => {
                     fs.removeSync(process.cwd() + "/dist.zip");
                 }
 
-                shell.exec(
-                    "powershell -command Compress-Archive -Path dist -DestinationPath dist.zip"
-                );
+                // 跨平台压缩命令
+                if (process.platform === 'win32') {
+                    shell.exec(
+                        "powershell -command Compress-Archive -Path dist -DestinationPath dist.zip"
+                    );
+                } else {
+                    shell.exec(
+                        "zip -r dist.zip dist"
+                    );
+                }
                 print("压缩dist文件夹成功");
             }
         });

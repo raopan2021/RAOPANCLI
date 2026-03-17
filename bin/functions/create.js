@@ -39,7 +39,15 @@ const create = () => {
         print('项目框架： ' + res.framework);
         print((res.variant === 'JavaScript' ? '不 ' : '') + '使用ts');
 
-        let fileDirTemp = import.meta.url.replace('file:///', '').replace('bin/functions/create.js', '');
+        let fileDirTemp = import.meta.url.replace('file://', '').replace('/bin/functions/create.js', '');
+        // 处理 Windows 和 Linux URL 格式差异
+        if (process.platform === 'win32') {
+            fileDirTemp = fileDirTemp.replace('/', '');
+        }
+        // 确保路径以 / 结尾
+        if (!fileDirTemp.endsWith('/')) {
+            fileDirTemp += '/';
+        }
         let fileDir = fileDirTemp + 'lib/template-' + res.framework;
 
         if (res.variant === 'TypeScript') fileDir += '-ts';

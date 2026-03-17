@@ -13,7 +13,15 @@ import printHelp from './functions/printHelp.js';
 
 const program = new Command();
 
-let fileDirTemp = import.meta.url.replace('file:///', '').replace('bin/index.js', '');
+let fileDirTemp = import.meta.url.replace('file://', '').replace('/bin/index.js', '');
+// 处理 Windows 和 Linux URL 格式差异
+if (process.platform === 'win32') {
+    fileDirTemp = fileDirTemp.replace('/', '');
+}
+// 确保路径以 / 结尾
+if (!fileDirTemp.endsWith('/')) {
+    fileDirTemp += '/';
+}
 
 program
     .name('raopancli 脚手架')
