@@ -57,6 +57,7 @@ const setMirror = async () => {
     if (shell.which('npm')) availablePM.push('npm');
     if (shell.which('pnpm')) availablePM.push('pnpm');
     if (shell.which('yarn')) availablePM.push('yarn');
+    if (shell.which('bun')) availablePM.push('bun');
 
     if (availablePM.length === 0) {
         printError('未找到任何包管理器');
