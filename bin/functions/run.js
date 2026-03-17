@@ -43,17 +43,23 @@ const run = (skipConfirm = false) => {
         }
 
         const action = [];
-        let npmWay = fs.pathExistsSync(process.cwd() + "/pnpm-lock.yaml")
-            ? "pnpm"
-            : "npm";
+        let npmWay = 'npm';
         
-        // 检查 npm/pnpm 是否可用
+        // 自动检测包管理器优先级: pnpm > yarn > npm
+        if (fs.pathExistsSync(process.cwd() + "/pnpm-lock.yaml")) {
+            npmWay = "pnpm";
+        } else if (fs.pathExistsSync(process.cwd() + "/yarn.lock")) {
+            npmWay = "yarn";
+        }
+        
+        // 检查 npm/pnpm/yarn 是否可用
         if (!shell.which(npmWay)) {
             printError(`未找到 ${npmWay}，请先安装`);
             return;
         }
         
-        action.push(npmWay === "npm" ? "npm run" : "pnpm");
+        const runCmd = npmWay === 'yarn' ? 'yarn' : (npmWay === "npm" ? "npm run" : "pnpm");
+        action.push(runCmd);
 
         const packageJson = fs.readJsonSync(process.cwd() + "/package.json");
         
