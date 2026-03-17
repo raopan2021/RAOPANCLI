@@ -5,7 +5,8 @@
     "main": "index.js",
     "type": "module",
     "bin": {
-        "raopancli": "./bin/index.js"
+        "raopancli": "./bin/index.js",
+        "rp": "./bin/index.js"
     },
     "scripts": {
         "dev": "node ./test/z.js",

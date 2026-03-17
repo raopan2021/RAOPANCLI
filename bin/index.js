@@ -11,6 +11,9 @@ import run from './functions/run.js';
 import setMirror from './functions/setMirror.js';
 import printHelp from './functions/printHelp.js';
 
+// 获取命令名（支持别名）
+const commandName = process.argv[1]?.includes('rp') ? 'rp' : 'raopancli';
+
 const program = new Command();
 
 let fileDirTemp = import.meta.url.replace('file://', '').replace('/bin/index.js', '');
@@ -24,7 +27,7 @@ if (!fileDirTemp.endsWith('/')) {
 }
 
 program
-    .name('raopancli 脚手架')
+    .name(commandName === 'rp' ? 'rp (raopancli)' : 'raopancli')
     .description('raopan 的 JavaScript 脚手架工具')
     .option('-h --help', '查看帮助信息')
     .option('-v --version', '查看脚手架版本号')
