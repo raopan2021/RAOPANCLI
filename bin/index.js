@@ -30,6 +30,7 @@ program
     .option('-v --version', '查看脚手架版本号')
     .option('-y --yes', '跳过确认提示')
     .option('-o --open', '启动后自动打开浏览器')
+    .option('-i --install', '自动安装依赖')
     .option('-r --run', '本地启动项目或打包项目')
     .option('-dn --delete', '删除当前目录的 node_modules')
     .option('-d --deploy', '部署当前项目到本机 nginx')
@@ -38,12 +39,13 @@ program
     .action(async (options) => {
         const skipConfirm = options.yes || false;
         const autoOpen = options.open || false;
+        const autoInstall = options.install || false;
         
         if (options.version) {
             print(JSON.parse(fs.readFileSync(fileDirTemp + 'package.json', 'utf-8')).version);
         } else if (options.run) {
             printLogo();
-            run(skipConfirm, autoOpen);
+            run(skipConfirm, autoOpen, autoInstall);
         } else if (options.delete) {
             deleteNodeModules(skipConfirm);
         } else if (options.deploy) {

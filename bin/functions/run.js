@@ -39,22 +39,14 @@ const openBrowser = (url) => {
 };
 
 // 检测 dev 服务器并打开浏览器
-const waitForServer = (url, timeout = 30000) => {
-    return new Promise((resolve) => {
-        const startTime = Date.now();
-        const check = () => {
-            // 简单延迟后打开浏览器
-            setTimeout(() => {
-                print(`正在打开浏览器: ${url}`);
-                openBrowser(url);
-                resolve();
-            }, 2000);
-        };
-        check();
-    });
+const waitForServer = (url) => {
+    setTimeout(() => {
+        print(`正在打开浏览器: ${url}`);
+        openBrowser(url);
+    }, 3000);
 };
 
-const run = (skipConfirm = false, autoOpen = false) => {
+const run = (skipConfirm = false, autoOpen = false, autoInstall = false) => {
     try {
         if (
             !(
@@ -97,174 +89,200 @@ const run = (skipConfirm = false, autoOpen = false) => {
         }
         
         const scriptArr = [];
-
         Object.entries(packageJson.scripts).forEach(([key, value]) => {
             scriptArr.push(`${key} _  ${value}`);
         });
 
-        const options = [
-            {
-                name: "script",
-                type: "list",
-                message: "请选择执行脚本",
-                default: scriptArr[0],
-                choices: stringOptimization(scriptArr),
-            },
-            {
-                name: "addVersion",
-                type: "confirm",
-                message: "package.json 的 version 是否加 1",
-                default: false,
-                when: () => !skipConfirm,
-            },
-        ];
-
-        // 如果 skipConfirm 为 true，自动选择第一个脚本
-        if (skipConfirm) {
-            const defaultScript = scriptArr[0];
-            const isDev = defaultScript.includes("dev") || defaultScript.includes("serve");
-            const isBuild = defaultScript.includes("build");
+        // 自动安装依赖
+        if (autoInstall && !fs.existsSync(process.cwd() + "/node_modules")) {
+            print('自动安装依赖中...');
+            const installCmd = npmWay === 'yarn' ? 'yarn' : 
+                               npmWay === 'bun' ? 'bun install' : 
+                               (npmWay === "npm" ? 'npm install' : 'pnpm install');
             
-            if (isBuild) {
-                addVersion(1);
-            }
+            const installProcess = spawn(installCmd, [], {
+                cwd: process.cwd(),
+                stdio: 'inherit',
+                shell: true
+            });
             
-            const scriptName = defaultScript.split("_")[0];
-            action.push(scriptName);
-            
-            print('执行脚本: ' + scriptName);
-            
-            // 如果是 dev 命令且 autoOpen 为 true，使用 spawn 以保持进程
-            if (isDev && autoOpen) {
-                const devCmd = npmWay === 'yarn' ? 'yarn' : 
-                               npmWay === 'bun' ? 'bun' : 
-                               (npmWay === "npm" ? 'npm' : 'pnpm');
-                const args = npmWay === 'yarn' ? [scriptName] : 
-                             npmWay === 'bun' ? ['run', scriptName] : 
-                             ['run', scriptName];
-                
-                const child = spawn(devCmd, args, {
-                    cwd: process.cwd(),
-                    stdio: 'inherit',
-                    shell: true
-                });
-                
-                child.on('close', (code) => {
-                    if (code !== 0) {
-                        printError(`脚本执行失败，退出码: ${code}`);
-                    }
-                });
-                
-                // 等待服务启动后打开浏览器
-                setTimeout(() => {
-                    const url = packageJson.devServer?.host ? 
-                        `http://${packageJson.devServer.host}:${packageJson.devServer.port || 5173}` :
-                        'http://localhost:5173';
-                    waitForServer(url);
-                }, 3000);
-                
-                return;
-            }
-            
-            // 否则使用 shell.exec（原有逻辑）
-            shell.exec(action.join(" ").trim(), (code) => {
+            installProcess.on('close', (code) => {
                 if (code !== 0) {
-                    printError("脚本执行失败");
-                    if (isBuild) addVersion(-1);
-                } else if (isBuild) {
-                    // 跨平台压缩 dist 文件夹
-                    if (fs.pathExistsSync(process.cwd() + "/dist.zip")) {
-                        print("删除dist.zip文件成功");
-                        fs.removeSync(process.cwd() + "/dist.zip");
-                    }
-
-                    if (process.platform === 'win32') {
-                        shell.exec(
-                            "powershell -command Compress-Archive -Path dist -DestinationPath dist.zip"
-                        );
-                    } else {
-                        shell.exec(
-                            "zip -r dist.zip dist"
-                        );
-                    }
-                    print("压缩dist文件夹成功");
+                    printError('依赖安装失败');
+                    return;
                 }
+                print('依赖安装完成');
+                // 继续执行脚本
+                executeScript(action, scriptArr, skipConfirm, autoOpen, npmWay, packageJson);
             });
             return;
         }
-
-        inquirer.prompt(options).then((res) => {
-            if (res.addVersion) addVersion(1);
-
-            const scriptName = res.script.split("_")[0];
-            const isDev = res.script.includes("dev") || res.script.includes("serve");
-            const isBuild = res.script.includes("build");
-            
-            action.push(scriptName);
-            
-            print('执行脚本: ' + scriptName);
-
-            // 如果是 dev 命令且 autoOpen 为 true
-            if (isDev && autoOpen) {
-                const devCmd = npmWay === 'yarn' ? 'yarn' : 
-                               npmWay === 'bun' ? 'bun' : 
-                               (npmWay === "npm" ? 'npm' : 'pnpm');
-                const args = npmWay === 'yarn' ? [scriptName] : 
-                             npmWay === 'bun' ? ['run', scriptName] : 
-                             ['run', scriptName];
-                
-                const child = spawn(devCmd, args, {
-                    cwd: process.cwd(),
-                    stdio: 'inherit',
-                    shell: true
-                });
-                
-                child.on('close', (code) => {
-                    if (code !== 0) {
-                        printError(`脚本执行失败，退出码: ${code}`);
-                    }
-                });
-                
-                setTimeout(() => {
-                    const url = packageJson.devServer?.host ? 
-                        `http://${packageJson.devServer.host}:${packageJson.devServer.port || 5173}` :
-                        'http://localhost:5173';
-                    waitForServer(url);
-                }, 3000);
-                return;
-            }
-
-            shell.exec(action.join(" ").trim(), (code) => {
-                if (code !== 0) {
-                    printError("脚本执行失败");
-                    if (res.addVersion) addVersion(-1);
-                }
-
-                // 跨平台压缩 dist 文件夹
-                if (isBuild) {
-                    // 看目录是否有dist.zip文件，有则删除
-                    if (fs.pathExistsSync(process.cwd() + "/dist.zip")) {
-                        print("删除dist.zip文件成功");
-                        fs.removeSync(process.cwd() + "/dist.zip");
-                    }
-
-                    // 跨平台压缩命令
-                    if (process.platform === 'win32') {
-                        shell.exec(
-                            "powershell -command Compress-Archive -Path dist -DestinationPath dist.zip"
-                        );
-                    } else {
-                        shell.exec(
-                            "zip -r dist.zip dist"
-                        );
-                    }
-                    print("压缩dist文件夹成功");
-                }
-            });
-        });
+        
+        // 正常执行
+        executeScript(action, scriptArr, skipConfirm, autoOpen, npmWay, packageJson);
     } catch (error) {
         printError('运行错误: ' + error.message);
     }
+};
+
+// 执行脚本的逻辑
+const executeScript = (action, scriptArr, skipConfirm, autoOpen, npmWay, packageJson) => {
+    const options = [
+        {
+            name: "script",
+            type: "list",
+            message: "请选择执行脚本",
+            default: scriptArr[0],
+            choices: stringOptimization(scriptArr),
+        },
+        {
+            name: "addVersion",
+            type: "confirm",
+            message: "package.json 的 version 是否加 1",
+            default: false,
+            when: () => !skipConfirm,
+        },
+    ];
+
+    // 如果 skipConfirm 为 true，自动选择第一个脚本
+    if (skipConfirm) {
+        const defaultScript = scriptArr[0];
+        const isDev = defaultScript.includes("dev") || defaultScript.includes("serve");
+        const isBuild = defaultScript.includes("build");
+        
+        if (isBuild) {
+            addVersion(1);
+        }
+        
+        const scriptName = defaultScript.split("_")[0];
+        action.push(scriptName);
+        
+        print('执行脚本: ' + scriptName);
+        
+        // 如果是 dev 命令且 autoOpen 为 true，使用 spawn 以保持进程
+        if (isDev && autoOpen) {
+            const devCmd = npmWay === 'yarn' ? 'yarn' : 
+                           npmWay === 'bun' ? 'bun' : 
+                           (npmWay === "npm" ? 'npm' : 'pnpm');
+            const args = npmWay === 'yarn' ? [scriptName] : 
+                         npmWay === 'bun' ? ['run', scriptName] : 
+                         ['run', scriptName];
+            
+            const child = spawn(devCmd, args, {
+                cwd: process.cwd(),
+                stdio: 'inherit',
+                shell: true
+            });
+            
+            child.on('close', (code) => {
+                if (code !== 0) {
+                    printError(`脚本执行失败，退出码: ${code}`);
+                }
+            });
+            
+            // 等待服务启动后打开浏览器
+            const url = packageJson.devServer?.host ? 
+                `http://${packageJson.devServer.host}:${packageJson.devServer.port || 5173}` :
+                'http://localhost:5173';
+            waitForServer(url);
+            
+            return;
+        }
+        
+        // 否则使用 shell.exec（原有逻辑）
+        shell.exec(action.join(" ").trim(), (code) => {
+            if (code !== 0) {
+                printError("脚本执行失败");
+                if (isBuild) addVersion(-1);
+            } else if (isBuild) {
+                // 跨平台压缩 dist 文件夹
+                if (fs.pathExistsSync(process.cwd() + "/dist.zip")) {
+                    print("删除dist.zip文件成功");
+                    fs.removeSync(process.cwd() + "/dist.zip");
+                }
+
+                if (process.platform === 'win32') {
+                    shell.exec(
+                        "powershell -command Compress-Archive -Path dist -DestinationPath dist.zip"
+                    );
+                } else {
+                    shell.exec(
+                        "zip -r dist.zip dist"
+                    );
+                }
+                print("压缩dist文件夹成功");
+            }
+        });
+        return;
+    }
+
+    inquirer.prompt(options).then((res) => {
+        if (res.addVersion) addVersion(1);
+
+        const scriptName = res.script.split("_")[0];
+        const isDev = res.script.includes("dev") || res.script.includes("serve");
+        const isBuild = res.script.includes("build");
+        
+        action.push(scriptName);
+        
+        print('执行脚本: ' + scriptName);
+
+        // 如果是 dev 命令且 autoOpen 为 true
+        if (isDev && autoOpen) {
+            const devCmd = npmWay === 'yarn' ? 'yarn' : 
+                           npmWay === 'bun' ? 'bun' : 
+                           (npmWay === "npm" ? 'npm' : 'pnpm');
+            const args = npmWay === 'yarn' ? [scriptName] : 
+                         npmWay === 'bun' ? ['run', scriptName] : 
+                         ['run', scriptName];
+            
+            const child = spawn(devCmd, args, {
+                cwd: process.cwd(),
+                stdio: 'inherit',
+                shell: true
+            });
+            
+            child.on('close', (code) => {
+                if (code !== 0) {
+                    printError(`脚本执行失败，退出码: ${code}`);
+                }
+            });
+            
+            const url = packageJson.devServer?.host ? 
+                `http://${packageJson.devServer.host}:${packageJson.devServer.port || 5173}` :
+                'http://localhost:5173';
+            waitForServer(url);
+            return;
+        }
+
+        shell.exec(action.join(" ").trim(), (code) => {
+            if (code !== 0) {
+                printError("脚本执行失败");
+                if (res.addVersion) addVersion(-1);
+            }
+
+            // 跨平台压缩 dist 文件夹
+            if (isBuild) {
+                // 看目录是否有dist.zip文件，有则删除
+                if (fs.pathExistsSync(process.cwd() + "/dist.zip")) {
+                    print("删除dist.zip文件成功");
+                    fs.removeSync(process.cwd() + "/dist.zip");
+                }
+
+                // 跨平台压缩命令
+                if (process.platform === 'win32') {
+                    shell.exec(
+                        "powershell -command Compress-Archive -Path dist -DestinationPath dist.zip"
+                    );
+                } else {
+                    shell.exec(
+                        "zip -r dist.zip dist"
+                    );
+                }
+                print("压缩dist文件夹成功");
+            }
+        });
+    });
 };
 
 export default run;
