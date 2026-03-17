@@ -30,7 +30,7 @@ const stringOptimization = (arr) => {
     return res;
 };
 
-const run = () => {
+const run = (skipConfirm = false) => {
     if (
         !(
             fs.pathExistsSync(process.cwd() + "/pnpm-lock.yaml") ||
@@ -59,16 +59,57 @@ const run = () => {
             name: "script",
             type: "list",
             message: "请选择执行脚本",
+            default: scriptArr[0],
             choices: stringOptimization(scriptArr),
         },
         {
             name: "addVersion",
             type: "confirm",
             message: "package.json 的 version 是否加 1",
-            default: true,
-            when: (answers) => answers.script.includes("build"),
+            default: false,
+            when: () => !skipConfirm && !skipConfirm,
         },
     ];
+
+    // 如果 skipConfirm 为 true，自动选择第一个脚本
+    if (skipConfirm) {
+        const defaultScript = scriptArr[0];
+        const isBuild = defaultScript.includes("build");
+        
+        if (isBuild) {
+            addVersion(1);
+        }
+        
+        action.push(defaultScript.split("_")[0]);
+        
+        print('执行脚本: ' + defaultScript.split("_")[0]);
+        
+        shell.exec(action.join(" ").trim(), (code) => {
+            if (code !== 0) {
+                printError("脚本执行失败");
+                if (isBuild) addVersion(-1);
+            } else if (isBuild) {
+                // 跨平台压缩 dist 文件夹
+                if (fs.pathExistsSync(process.cwd() + "/dist.zip")) {
+                    print("删除dist.zip文件成功");
+                    fs.removeSync(process.cwd() + "/dist.zip");
+                }
+
+                if (process.platform === 'win32') {
+                    shell.exec(
+                        "powershell -command Compress-Archive -Path dist -DestinationPath dist.zip"
+                    );
+                } else {
+                    shell.exec(
+                        "zip -r dist.zip dist"
+                    );
+                }
+                print("压缩dist文件夹成功");
+            }
+        });
+        return;
+    }
+
     inquirer.prompt(options).then((res) => {
         if (res.addVersion) addVersion(1);
 

@@ -274,7 +274,7 @@ let nginxServerPath = ""; // nginx 服务器地址
 let projectName = ""; // 项目名称
 let projectPath = ""; // 项目部署目录
 
-const deploy = async () => {
+const deploy = async (skipConfirm = false) => {
     // 获取当前项目的 dist
     const distPath = await getDistPath();
 
