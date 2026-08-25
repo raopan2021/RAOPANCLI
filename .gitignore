@@ -1,6 +1,12 @@
 node_modules
+dist/
+dist.zip
+*.zip
+restart.bat
 
 bin/memory/serverUrl.json
+docs/.vitepress/cache/
+docs/.vitepress/dist/
 
-dist/
-docs/.vitepress/cache/*
+.eslintcache
+*.log
